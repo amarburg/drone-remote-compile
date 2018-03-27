@@ -100,7 +100,19 @@ mkdir -p "$home/.ssh"
 printf "StrictHostKeyChecking no\n" > "$home/.ssh/config"
 chmod 0700 "$home/.ssh/config"
 
-cp /root/keys/id_rsa* /root/.ssh/
+## If keys have been mounted...
+if [ -f /root/keys/id_rsa ]; then
+  cp /root/keys/id_rsa* /root/.ssh/
+else
+  if [ -n $SSH_KEY ]; then
+    keyfile=/root/.ssh/id_rsa
+    echo "$SSH_KEY" > $keyfile
+    chmod 0600 $keyfile
+  else
+    echo "Private key not supplied in /root/keys or in SSH_KEY"
+    exit -1
+  fi
+fi
 
 #keyfile="$home/.ssh/id_rsa.pub"
 # echo "$SSH_KEY" | grep -q "ssh-ed25519"
@@ -136,7 +148,7 @@ for host in "${HOSTS[@]}"; do
       fi
 
       ## Append a slash
-      ##THIS_TARGET="$THIS_TARGET/"
+      THIS_TARGET="$THIS_TARGET/"
       echo $(printf "Using tempdir %s" $THIS_TARGET)
       if [ "$result" -gt "0" ]; then exit $result; fi
     else

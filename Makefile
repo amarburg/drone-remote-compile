@@ -6,12 +6,18 @@ TEST_KEYS = testdata/keys/id_rsa
 all: docker drone
 
 
+## Build image
 docker: remote.sh Dockerfile
 	docker build --rm -t $(IMAGE) .
 
 
-## Configuration for demo
+## Test locally with drone
+drone: $(TEST_KEYS)
+	drone exec .drone.yml
 
+
+
+## Configuration for demo
 PLUGIN_HOST ?= $(shell hostname)
 PLUGIN_USER ?= $(shell whoami)
 PLUGIN_TARGET ?= "tempdir"
@@ -30,9 +36,5 @@ demo: $(TEST_KEYS)
 						-v $(abspath $(dir $(TEST_KEYS))):/root/keys:ro \
 						--rm -t -i $(IMAGE)
 
-
-## Test locally with drone
-drone: $(TEST_KEYS)
-	drone exec --local .drone.yml
 
 .PHONY: docker demo drone
