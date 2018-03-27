@@ -31,11 +31,6 @@ if [ -z "$RSYNC_USER" ]; then
     fi
 fi
 
-## Hack for testing where the service on other end may not be started yet..
-if [ -n "$PLUGIN_DO_SLEEP" ]; then
-  sleep $PLUGIN_DO_SLEEP
-fi
-
 # SSH_KEY=$RSYNC_KEY
 # if [ -z "$RSYNC_KEY" ]; then
 #     if [ -z "$PLUGIN_KEY" ]; then
@@ -44,12 +39,6 @@ fi
 #     fi
 #     SSH_KEY=$PLUGIN_KEY
 # fi
-
-SSH_PUBKEY=/root/keys/id_rsa.pub
-if [ ! -f "$SSH_PUBKEY" ]; then
-  echo "No SSH keys mounted at /root/keys"
-  exit 1
-fi
 
 if [ -z "$PLUGIN_ARGS" ]; then
     ARGS=
@@ -100,18 +89,22 @@ mkdir -p "$home/.ssh"
 printf "StrictHostKeyChecking no\n" > "$home/.ssh/config"
 chmod 0700 "$home/.ssh/config"
 
-## If keys have been mounted...
-if [ -f /root/keys/id_rsa ]; then
-  cp /root/keys/id_rsa* /root/.ssh/
-else
-  if [ -n $SSH_KEY ]; then
-    keyfile=/root/.ssh/id_rsa
-    echo "$SSH_KEY" > $keyfile
-    chmod 0600 $keyfile
+## Environment takes precedence over mounted files
+if [ -z "$SSH_PRIVKEY" ]; then
+  echo "SSH_PRIVKEY not set, checking for /root/keys"
+  ## If keys have been mounted...
+  if [ -f /root/keys/id_rsa ]; then
+    cp /root/keys/id_rsa* /root/.ssh/
   else
-    echo "Private key not supplied in /root/keys or in SSH_KEY"
-    exit -1
+      echo "Private key not supplied in mounted volume /root/keys or in env variable SSH_PRIVKEY"
+      exit -1
   fi
+else
+  echo $(printf "Using provided private key")
+
+  keyfile=/root/.ssh/id_rsa
+  echo "$SSH_PRIVKEY" > $keyfile
+  chmod 0600 $keyfile
 fi
 
 #keyfile="$home/.ssh/id_rsa.pub"
@@ -132,6 +125,11 @@ fi
 function join_with { local d=$1; shift; echo -n "$1"; shift; printf "%s" "${@/#/$d}"; }
 IFS=','; read -ra COMMANDS <<< "$PLUGIN_SCRIPT"
 script=$(join_with ' && ' "${COMMANDS[@]}")
+
+## Hack for testing where the service on other end may not be started yet..
+if [ -n "$PLUGIN_DO_SLEEP" ]; then
+  sleep $PLUGIN_DO_SLEEP
+fi
 
 # Run rsync
 IFS=','; read -ra HOSTS <<< "$PLUGIN_HOSTS"

@@ -10,10 +10,12 @@ all: docker drone
 docker: remote.sh Dockerfile
 	docker build --rm -t $(IMAGE) .
 
+push:
+	docker push $(IMAGE)
 
 ## Test locally with drone
 drone: $(TEST_KEYS)
-	drone exec .drone.yml
+	drone exec 
 
 
 
