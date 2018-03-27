@@ -1,7 +1,10 @@
 FROM alpine:3.4
-MAINTAINER Michael de Wit <michael@drillster.com>
+MAINTAINER Aaron Marburg <amarburg@uw.edu>
 
 RUN apk add --no-cache ca-certificates bash openssh-client rsync
-COPY upload.sh /usr/local/
+COPY remote.sh /usr/local/
 
-ENTRYPOINT ["/usr/local/upload.sh"]
+VOLUME /root/keys
+
+WORKDIR /root
+ENTRYPOINT ["/usr/local/remote.sh"]

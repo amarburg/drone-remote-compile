@@ -1,0 +1,19 @@
+
+pipeline:
+  demo:
+    image: amarburg/remote-compile:latest
+    hosts: ssh-host
+    user: root
+    target: tempdir
+    do_sleep: 15
+    script:
+      - ls -al
+      - touch foo
+    volumes:
+      - /Users/aaron/workspace/go/src/github.com/amarburg/drone-remote-compile-sh/testdata/keys:/root/keys
+
+services:
+  ssh-host:
+    image: panubo/sshd
+    volumes:
+      - /Users/aaron/workspace/go/src/github.com/amarburg/drone-remote-compile-sh/testdata/keys:/root/.ssh

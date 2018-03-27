@@ -1,4 +1,4 @@
-Use the Rsync plugin to synchronize files to remote hosts, and execute arbitrary commands on those hosts.
+Use the `remote-compile` plugin to synchronize files to remote hosts, and execute arbitrary commands on those hosts, then copy the results back.
 
 ## Config
 The following parameters are used to configure the plugin:
