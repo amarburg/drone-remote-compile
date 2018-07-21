@@ -5,17 +5,16 @@ TEST_KEYS = testdata/keys/id_rsa
 
 all: docker drone
 
-
 ## Build image
-docker: remote.sh Dockerfile
+build: remote.sh Dockerfile
 	docker build --rm -t $(IMAGE) .
 
 push:
 	docker push $(IMAGE)
 
 ## Test locally with drone
-drone: $(TEST_KEYS)
-	drone exec 
+local_drone: $(TEST_KEYS)
+	drone exec
 
 
 
